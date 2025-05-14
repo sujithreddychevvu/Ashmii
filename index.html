@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dynamic Excel Export</title>
+  <title>Upload Excel to GitHub</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-  <h1>Dynamic Excel Export</h1>
+  <h1>Generate and Upload Excel to GitHub</h1>
 
-  <!-- Input form to update values -->
   <form id="dataForm">
     <label for="name">Name:</label>
     <input type="text" id="name" name="name" required><br><br>
@@ -35,7 +34,7 @@
   </table>
 
   <br><br>
-  <button id="downloadBtn">Download Excel</button>
+  <button id="uploadBtn">Upload Excel to GitHub</button>
 
   <script>
     const data = []; // Array to hold dynamic data for Excel export
@@ -63,8 +62,8 @@
       document.getElementById("dataForm").reset();
     });
 
-    // Function to download the data as an Excel file
-    document.getElementById("downloadBtn").addEventListener("click", function() {
+    // Function to upload the generated Excel file to GitHub
+    document.getElementById("uploadBtn").addEventListener("click", function() {
       if (data.length > 0) {
         // Create a worksheet from the data array
         const ws = XLSX.utils.aoa_to_sheet([["Name", "Age", "City"], ...data]);
@@ -73,13 +72,50 @@
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
 
-        // Download the Excel file
-        XLSX.writeFile(wb, "dynamic_data.xlsx");
+        // Convert the workbook to binary data
+        const wbout = XLSX.write(wb, { bookType: "xlsx", type: "binary" });
+
+        // Convert binary to Base64
+        const base64Data = btoa(String.fromCharCode.apply(null, new Uint8Array(wbout)));
+
+        // GitHub API credentials (replace with your GitHub token and repo details)
+        const token = 'YOUR_GITHUB_PERSONAL_ACCESS_TOKEN'; // Personal Access Token
+        const username = 'YOUR_GITHUB_USERNAME';
+        const repo = 'YOUR_REPO_NAME';
+        const path = 'dynamic_data.xlsx'; // Path and filename in the repository
+
+        // GitHub API URL for uploading file
+        const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${path}`;
+
+        // Data to send to the GitHub API (file content in Base64)
+        const payload = {
+          message: "Add dynamic Excel data",
+          content: base64Data,
+          branch: "main", // or your default branch name
+        };
+
+        // Fetch request to upload file to GitHub
+        fetch(apiUrl, {
+          method: "PUT",
+          headers: {
+            "Authorization": `token ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        })
+        .then(response => response.json())
+        .then(data => {
+          alert("Excel file uploaded successfully!");
+          console.log(data);
+        })
+        .catch(error => {
+          alert("Error uploading file to GitHub.");
+          console.error(error);
+        });
       } else {
-        alert("No data to download!");
+        alert("No data to upload!");
       }
     });
   </script>
-
 </body>
 </html>
