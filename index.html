@@ -3,33 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Export to Excel</title>
+  <title>Dynamic Excel Export</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-  <h1>Save Values to Excel</h1>
-  <button id="saveButton">Save to Excel</button>
+  <h1>Dynamic Excel Export</h1>
+
+  <!-- Input form to update values -->
+  <form id="dataForm">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required><br><br>
+    <label for="age">Age:</label>
+    <input type="number" id="age" name="age" required><br><br>
+    <label for="city">City:</label>
+    <input type="text" id="city" name="city" required><br><br>
+    <button type="submit">Add Data</button>
+  </form>
+
+  <h2>Data Table</h2>
+  <table border="1" id="dataTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Age</th>
+        <th>City</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Data rows will be dynamically added here -->
+    </tbody>
+  </table>
+
+  <br><br>
+  <button id="downloadBtn">Download Excel</button>
 
   <script>
-    // Sample data you want to save to Excel
-    const data = [
-      ["Name", "Age", "City"],
-      ["John", 28, "New York"],
-      ["Jane", 22, "London"],
-      ["Mike", 32, "San Francisco"]
-    ];
+    const data = []; // Array to hold dynamic data for Excel export
 
-    document.getElementById("saveButton").addEventListener("click", function() {
-      // Create a worksheet
-      const ws = XLSX.utils.aoa_to_sheet(data);
+    // Function to handle form submission
+    document.getElementById("dataForm").addEventListener("submit", function(event) {
+      event.preventDefault(); // Prevent form from submitting and reloading the page
 
-      // Create a workbook
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+      // Get values from the form
+      const name = document.getElementById("name").value;
+      const age = document.getElementById("age").value;
+      const city = document.getElementById("city").value;
 
-      // Save the workbook as an Excel file
-      XLSX.writeFile(wb, "sample_data.xlsx");
+      // Add data to the array
+      data.push([name, age, city]);
+
+      // Add new row to the table
+      const table = document.getElementById("dataTable").getElementsByTagName('tbody')[0];
+      const newRow = table.insertRow();
+      newRow.insertCell(0).textContent = name;
+      newRow.insertCell(1).textContent = age;
+      newRow.insertCell(2).textContent = city;
+
+      // Clear the form
+      document.getElementById("dataForm").reset();
+    });
+
+    // Function to download the data as an Excel file
+    document.getElementById("downloadBtn").addEventListener("click", function() {
+      if (data.length > 0) {
+        // Create a worksheet from the data array
+        const ws = XLSX.utils.aoa_to_sheet([["Name", "Age", "City"], ...data]);
+
+        // Create a workbook and append the worksheet
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+
+        // Download the Excel file
+        XLSX.writeFile(wb, "dynamic_data.xlsx");
+      } else {
+        alert("No data to download!");
+      }
     });
   </script>
+
 </body>
 </html>
