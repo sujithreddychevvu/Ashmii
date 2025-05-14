@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Upload Excel to GitHub</title>
+  <title>Automatic Upload Excel to GitHub</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-  <h1>Generate and Upload Excel to GitHub</h1>
+  <h1>Dynamic Excel Export with Auto Upload</h1>
 
   <form id="dataForm">
     <label for="name">Name:</label>
@@ -33,13 +33,10 @@
     </tbody>
   </table>
 
-  <br><br>
-  <button id="uploadBtn">Upload Excel to GitHub</button>
-
   <script>
     const data = []; // Array to hold dynamic data for Excel export
 
-    // Function to handle form submission
+    // Function to handle form submission and automatically upload to GitHub
     document.getElementById("dataForm").addEventListener("submit", function(event) {
       event.preventDefault(); // Prevent form from submitting and reloading the page
 
@@ -60,10 +57,13 @@
 
       // Clear the form
       document.getElementById("dataForm").reset();
+
+      // After new data is added, generate and upload the Excel file automatically
+      uploadExcelToGitHub();
     });
 
     // Function to upload the generated Excel file to GitHub
-    document.getElementById("uploadBtn").addEventListener("click", function() {
+    function uploadExcelToGitHub() {
       if (data.length > 0) {
         // Create a worksheet from the data array
         const ws = XLSX.utils.aoa_to_sheet([["Name", "Age", "City"], ...data]);
@@ -89,7 +89,7 @@
 
         // Data to send to the GitHub API (file content in Base64)
         const payload = {
-          message: "Add dynamic Excel data",
+          message: "Auto-upload dynamic Excel data",
           content: base64Data,
           branch: "main", // or your default branch name
         };
@@ -115,7 +115,8 @@
       } else {
         alert("No data to upload!");
       }
-    });
+    }
   </script>
+
 </body>
 </html>
